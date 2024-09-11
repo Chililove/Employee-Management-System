@@ -1,0 +1,28 @@
+# Ignore build outputs
+bin/
+obj/
+
+# Ignore Visual Studio files
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Ignore Rider files
+.idea/
+
+# Ignore logs and debug files
+*.log
+*.pdb
+
+# Ignore any other temporary files
+*.tmp
+*.temp
+
+# Ignore local environment configuration
+appsettings.Development.json
+
+# Ignore package dependencies
+packages/
+node_modules/
