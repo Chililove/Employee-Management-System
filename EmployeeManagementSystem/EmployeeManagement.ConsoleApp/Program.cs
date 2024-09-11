@@ -133,6 +133,32 @@ public class Program
 
     }
 
+    private static async Task FetchAndExportEmployeesAsync()
+    {
+        string apiUrl = "http://localhost:5050/api/employees";
+
+        try
+        {
+            var employees = await client.GetFromJsonAsync<List<Employee>>(apiUrl);
+            if(employees == null || employees.Count == 0)
+            {
+              Console.WriteLine("No data found on employee.");
+              return;
+
+            }
+            ExportToCsv(employees);
+        }
+        catch(HttpRequestException httpEx)
+        {
+         Console.WriteLine($"HTTP error occurred: {httpEx.Message}");
+
+        }
+        catch(Exception ex)
+        {
+            Console.WriteLine($"Error occurred: {ex.Message}");
+
+        }
+    }
 
     private static void ExportToCsv(List<Employee> employees)
     {
