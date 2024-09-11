@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net.NetworkInformation;
 using EmployeeManagement.ConsoleApp.Models;
+using System.Diagnostics;
 
 
 public class Program
@@ -20,7 +21,7 @@ public class Program
             Console.WriteLine("Console App for Employee Management System");
             Console.WriteLine("------------------------------------------");
 
-// created interface
+            // created interface
             await ShowMenuAsync();
         }
         catch (Exception ex)
@@ -31,7 +32,7 @@ public class Program
 
     private static async Task ShowMenuAsync()
     {
-        while(true)
+        while (true)
         {
             Console.WriteLine("\nSelect action:");
             Console.WriteLine("1. Fetching all employees");
@@ -41,57 +42,97 @@ public class Program
             Console.WriteLine("Select an option: ");
 
             var choice = Console.ReadLine();
-            switch (choice) 
+            switch (choice)
             {
                 case "1":
-                await FetchEmployeesAsync();
-                break;
+                    await FetchEmployeesAsync();
+                    break;
                 case "2":
-                await SearchEmployeesAsync();
-                break;
+                    await SearchEmployeesAsync();
+                    break;
                 case "3":
-                await FetchAndExportEmployeesAsync();
-                break;
+                    await FetchAndExportEmployeesAsync();
+                    break;
                 case "4":
-                Console.WriteLine("Exiting...");
-                return;
+                    Console.WriteLine("Exiting...");
+                    return;
                 default:
-                Console.WriteLine("Your choice is not valid, please select another option.");
-                break;
+                    Console.WriteLine("Your choice is not valid, please select another option.");
+                    break;
 
             }
 
         }
     }
 
-private static async Task FetchEmployeesAsync()
-{
-    string apiUrl = "http://localhost:5050/api/employees";
+    private static async Task FetchEmployeesAsync()
+    {
+        string apiUrl = "http://localhost:5050/api/employees";
 
-    try
-    {
-        var employees = await client.GetFromJsonAsync<List<Employee>>(apiUrl);
-        if(employees == null || employees.Count == 0)
+        try
         {
-            Console.WriteLine("No data found on employee");
-            return;
+            var employees = await client.GetFromJsonAsync<List<Employee>>(apiUrl);
+            if (employees == null || employees.Count == 0)
+            {
+                Console.WriteLine("No data found on employee");
+                return;
+            }
+            Console.WriteLine("Employee data grabbed succesfully");
+            foreach (var employee in employees)
+            {
+                Console.WriteLine($"{employee.Id}: {employee.Name} - {employee.Position} - {employee.Salary}");
+            }
         }
-        Console.WriteLine("Employee data grabbed succesfully");
-        foreach (var employee in employees)
+        catch (HttpRequestException httpEx)
         {
-            Console.WriteLine($"{employee.Id}: {employee.Name} - {employee.Position} - {employee.Salary}");
+            Console.WriteLine($"HTTP error: {httpEx.Message}");
         }
-    }
-    catch(HttpRequestException httpEx)
-    {
-Console.WriteLine($"HTTP error: {httpEx.Message}");
-    }
-    catch(Exception ex)
-    {
+        catch (Exception ex)
+        {
             Console.WriteLine("Error Occured see: {ex.Message}");
 
+        }
     }
-}
+
+    private static async Task SearchEmployeesAsync()
+    {
+        Console.WriteLine("Enter search term (like name or position): ");
+        var searchTerm = Console.ReadLine();
+
+        if (string.IsNullOrWhiteSpace(searchTerm))
+        {
+            Console.WriteLine("Search term is not valid.");
+            return;
+
+        }
+
+        string apiUrl = $"http://localhost:5050/api/employees/search?query={searchTerm}";
+
+        try
+        {
+            var employees = await client.GetFromJsonAsync<List<Employee>>(apiUrl);
+            if (employees == null || employees.Count == 0)
+            {
+                Console.WriteLine("There is no employees matching this search");
+                return;
+            }
+            Console.WriteLine("Search results:");
+            foreach (var employee in employees)
+            {
+                Console.WriteLine($"{employee.Id}: {employee.Name} - {employee.Position} - {employee.Salary}");
+            }
+        }
+        catch (HttpRequestException httpEx)
+        {
+            Console.WriteLine($"HTTP error: {httpEx.Message}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error accured: {ex.Message}");
+        }
+
+    }
+
 
     private static void ExportToCsv(List<Employee> employees)
     {
