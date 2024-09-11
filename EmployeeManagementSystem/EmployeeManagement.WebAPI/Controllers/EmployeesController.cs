@@ -9,12 +9,21 @@ public class EmployeesController : ControllerBase
     private static List<Employee> Employees = new List<Employee>();
     //GET
     [HttpGet]
-    public ActionResult<IEnumerable<Employee>> Get()
+    public ActionResult<IEnumerable<Employee>> Get(int pageNumber = 1, int pageSize = 10)
     {
         try
         {
-            Console.WriteLine("Received the GET request.");
-            return Ok(Employees);
+            Console.WriteLine("Received the GET request for page number {pageNumber} with this page size {pageSize}.");
+            var pagedEmployees = Employees
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToList();
+
+            if (!pagedEmployees.Any())
+            {
+                return NotFound("There is no employees on this page");
+            }
+            return Ok(pagedEmployees);
         }
         catch (Exception ex)
         {
@@ -124,6 +133,39 @@ public class EmployeesController : ControllerBase
         return Ok(result);
 
 
+    }
+
+    [HttpGet("sorted")]
+
+    public ActionResult<IEnumerable<Employee>> GetSorted(string sortBy = "Name", bool descending = false)
+    {
+        try
+        {
+            Console.WriteLine($"GET request for sort by {sortBy}, descending: {descending}.");
+            var sortedEmployees = Employees.AsQueryable(); //gets all
+
+            switch (sortBy.ToLower()) //switch statement to use on sortBy param
+
+            {
+                case "name":
+                    sortedEmployees = descending ? sortedEmployees.OrderByDescending(e => e.Name) : sortedEmployees.OrderBy(e => e.Name);
+                    break;
+                case "position":
+                    sortedEmployees = descending ? sortedEmployees.OrderByDescending(e => e.Position) : sortedEmployees.OrderBy(e => e.Position);
+                    break;
+                case "salary":
+                    sortedEmployees = descending ? sortedEmployees.OrderByDescending(e => e.Salary) : sortedEmployees.OrderBy(e => e.Salary);
+                    break;
+                default:
+                    return BadRequest("Sorting needs either a name, position or salary to sort");
+            }
+            return Ok(sortedEmployees.ToList());
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error while sorting: {ex.Message}");
+            return StatusCode(500, "Error while sorting employee data");
+        }
     }
 
     //for validation i used data annotaions to make sure the requests are validated, in the models file
