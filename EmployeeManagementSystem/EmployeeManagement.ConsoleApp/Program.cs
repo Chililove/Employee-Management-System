@@ -64,7 +64,34 @@ public class Program
         }
     }
 
+private static async Task FetchEmployeesAsync()
+{
+    string apiUrl = "http://localhost:5050/api/employees";
 
+    try
+    {
+        var employees = await client.GetFromJsonAsync<List<Employee>>(apiUrl);
+        if(employees == null || employees.Count == 0)
+        {
+            Console.WriteLine("No data found on employee");
+            return;
+        }
+        Console.WriteLine("Employee data grabbed succesfully");
+        foreach (var employee in employees)
+        {
+            Console.WriteLine($"{employee.Id}: {employee.Name} - {employee.Position} - {employee.Salary}");
+        }
+    }
+    catch(HttpRequestException httpEx)
+    {
+Console.WriteLine($"HTTP error: {httpEx.Message}");
+    }
+    catch(Exception ex)
+    {
+            Console.WriteLine("Error Occured see: {ex.Message}");
+
+    }
+}
 
     private static void ExportToCsv(List<Employee> employees)
     {
