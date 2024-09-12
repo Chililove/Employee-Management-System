@@ -6,7 +6,13 @@ using System.Linq;
 [Route("api/[controller]")]
 public class EmployeesController : ControllerBase
 {
-    private static List<Employee> Employees = new List<Employee>();
+    private static List<Employee> Employees = new List<Employee>
+
+    {
+                new Employee { Id = 1, Name = "John Doe", Position = "Developer", Salary = 50000 },
+        new Employee { Id = 2, Name = "Jane Smith", Position = "Manager", Salary = 70000 }
+
+    };
     //GET
     [HttpGet]
     public ActionResult<IEnumerable<Employee>> Get(int pageNumber = 1, int pageSize = 10)
